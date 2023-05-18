@@ -1,0 +1,14 @@
+# Folders
+.idea
+.vscode
+
+# Gradle files
+.gradle
+build
+out
+
+# compiler output
+bin/
+
+# Files
+gradle.properties

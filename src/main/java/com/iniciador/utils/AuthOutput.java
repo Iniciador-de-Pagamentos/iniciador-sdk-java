@@ -1,4 +1,4 @@
-package utils;
+package com.iniciador.utils;
 
 public class AuthOutput {
     private String accessToken;
@@ -11,5 +11,3 @@ public class AuthOutput {
         return accessToken;
     }
 }
-
-

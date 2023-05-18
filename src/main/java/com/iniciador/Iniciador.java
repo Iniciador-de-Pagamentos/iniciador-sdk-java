@@ -1,4 +1,6 @@
-import utils.*;
+package com.iniciador;
+
+import com.iniciador.utils.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -37,23 +39,12 @@ public class Iniciador {
         }
     }
 
-    public class AuthOutput {
-        private String accessToken;
-
-        public AuthOutput(String accessToken) {
-            this.accessToken = accessToken;
-        }
-
-        public String getAccessToken() {
-            return accessToken;
-        }
-    }
-
     public AuthOutput auth() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(environment + "/auth"))
-                .POST(HttpRequest.BodyPublishers.ofString(String.format("{\"clientId\":\"%s\",\"clientSecret\":\"%s\"}", clientId, clientSecret)))
+                .POST(HttpRequest.BodyPublishers.ofString(
+                        String.format("{\"clientId\":\"%s\",\"clientSecret\":\"%s\"}", clientId, clientSecret)))
                 .header("Content-Type", "application/json")
                 .build();
 
@@ -64,12 +55,28 @@ public class Iniciador {
         return parsedResponse;
     }
 
+    public String authInterface() throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(environment + "/auth/interface"))
+                .POST(HttpRequest.BodyPublishers.ofString(
+                        String.format("{\"clientId\":\"%s\",\"clientSecret\":\"%s\"}", clientId, clientSecret)))
+                .header("Content-Type", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        String responseBody = response.body();
+        return responseBody.toString();
+    }
+
     public static void main(String[] args) {
-        Iniciador iniciador = new Iniciador("c82700f8-f0bf-4cce-9068-a2fd6991ee9b","sB#C8ybhJEN63RjBz6Kpd8NUywHkKzXN$d&Zr3j4", "dev");
+        Iniciador iniciador = new Iniciador("c82700f8-f0bf-4cce-9068-a2fd6991ee9b",
+                "sB#C8ybhJEN63RjBz6Kpd8NUywHkKzXN$d&Zr3j4", "dev");
 
         try {
-            AuthOutput authOutput = iniciador.auth();
-            System.out.println("Access Token: " + authOutput.getAccessToken());
+            String authOutput = iniciador.authInterface();
+            System.out.println("Access Token: " + authOutput);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
