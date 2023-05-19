@@ -1,5 +1,6 @@
 package com.iniciador;
 
+import com.google.gson.Gson;
 import com.iniciador.utils.*;
 
 import java.io.IOException;
@@ -8,8 +9,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Iniciador {
     private String clientId;
@@ -51,11 +54,14 @@ public class Iniciador {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         String responseBody = response.body();
-        AuthOutput parsedResponse = new AuthOutput(responseBody);
+
+        Gson gson = new Gson();
+        AuthOutput parsedResponse = gson.fromJson(responseBody, AuthOutput.class);
+
         return parsedResponse;
     }
 
-    public String authInterface() throws IOException, InterruptedException {
+    public AuthInterfaceOutput authInterface() throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(environment + "/auth/interface"))
@@ -67,7 +73,11 @@ public class Iniciador {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         String responseBody = response.body();
-        return responseBody.toString();
+
+        Gson gson = new Gson();
+        AuthInterfaceOutput parsedResponse = gson.fromJson(responseBody, AuthInterfaceOutput.class);
+
+        return parsedResponse;
     }
 
     public static void main(String[] args) {
@@ -75,8 +85,11 @@ public class Iniciador {
                 "sB#C8ybhJEN63RjBz6Kpd8NUywHkKzXN$d&Zr3j4", "dev");
 
         try {
-            String authOutput = iniciador.authInterface();
-            System.out.println("Access Token: " + authOutput);
+            AuthOutput authOutput = iniciador.auth();
+            AuthInterfaceOutput authInterfaceOutput = iniciador.authInterface();
+
+            System.out.println("Access Token (Auth): " + authOutput.getAccessToken());
+            System.out.println("Access Token (Auth Interface): " + authInterfaceOutput.getAccessToken());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
