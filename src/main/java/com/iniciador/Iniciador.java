@@ -1,7 +1,9 @@
 package com.iniciador;
 
 import com.google.gson.Gson;
-import com.iniciador.utils.*;
+import com.iniciador.dtos.*;
+
+import org.modelmapper.ModelMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -80,6 +82,44 @@ public class Iniciador {
         return parsedResponse;
     }
 
+    public ParticipantFilterOutputDto participants(String accessToken, ParticipantFilterDto filters)
+            throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+
+        Map<String, String> filterParams = new HashMap<>();
+        if (filters != null) {
+            if (filters.getId() != null) {
+                filterParams.put("id", filters.getId().toString());
+            }
+            if (filters.getName() != null) {
+                filterParams.put("name", filters.getName());
+            }
+            // Adicione outros campos de filtro, se necessário
+        }
+
+        String queryString = filterParams.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining("&"));
+
+        String url = environment + "/participants";
+        if (!queryString.isEmpty()) {
+            url += "?" + queryString;
+        }
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer " + accessToken)
+                .build();
+
+        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+        String responseBody = response.body();
+
+        Gson gson = new Gson();
+        ParticipantFilterOutputDto parsedResponse = gson.fromJson(responseBody, ParticipantFilterOutputDto.class);
+
+        return parsedResponse;
+    }
+
     public static void main(String[] args) {
         Iniciador iniciador = new Iniciador("c82700f8-f0bf-4cce-9068-a2fd6991ee9b",
                 "sB#C8ybhJEN63RjBz6Kpd8NUywHkKzXN$d&Zr3j4", "dev");
@@ -88,8 +128,13 @@ public class Iniciador {
             AuthOutput authOutput = iniciador.auth();
             AuthInterfaceOutput authInterfaceOutput = iniciador.authInterface();
 
+            String accessToken = authOutput.getAccessToken();
+
+            ParticipantFilterOutputDto participants = iniciador.participants(accessToken, null);
+
             System.out.println("Access Token (Auth): " + authOutput.getAccessToken());
             System.out.println("Access Token (Auth Interface): " + authInterfaceOutput.getAccessToken());
+            System.out.println("Participants: " + participants.getData());
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
